@@ -1,0 +1,31 @@
+{
+  "template": "https://github.com/radix-ai/poetry-cookiecutter",
+  "commit": "e237e3e7c1055cb6ef85f689cdfcf6341c25522c",
+  "checkout": null,
+  "context": {
+    "cookiecutter": {
+      "package_name": "cvxpy-portfolio-optimizer",
+      "package_description": "Python package to optimize portfolios",
+      "package_url": "https://github.com/lsattolo/cvxpy-portfolio-optimizer",
+      "author_name": "Lorenzo Sattolo",
+      "author_email": "l.sattolo96@gmail.com",
+      "python_version": "3.10.5",
+      "development_environment": "simple",
+      "with_conventional_commits": "0",
+      "with_fastapi_api": "0",
+      "with_jupyter_lab": "1",
+      "with_pydantic_typing": "1",
+      "with_sentry_logging": "0",
+      "with_streamlit_app": "0",
+      "with_typer_cli": "0",
+      "continuous_integration": "GitHub",
+      "docstring_style": "NumPy",
+      "private_package_repository_name": "",
+      "private_package_repository_url": "",
+      "__package_name_kebab_case": "cvxpy-portfolio-optimizer",
+      "__package_name_snake_case": "cvxpy_portfolio_optimizer",
+      "_template": "https://github.com/radix-ai/poetry-cookiecutter"
+    }
+  },
+  "directory": null
+}

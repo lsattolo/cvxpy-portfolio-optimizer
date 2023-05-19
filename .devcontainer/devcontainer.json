@@ -1,0 +1,50 @@
+{
+    "name": "cvxpy-portfolio-optimizer",
+    "dockerComposeFile": "../docker-compose.yml",
+    "service": "devcontainer",
+    "workspaceFolder": "/workspaces/cvxpy-portfolio-optimizer/",
+    "remoteUser": "user",
+    "overrideCommand": true,
+    "initializeCommand": ".devcontainer/init",
+    "postStartCommand": "cp --update /opt/build/poetry/poetry.lock /workspaces/cvxpy-portfolio-optimizer/ && mkdir -p /workspaces/cvxpy-portfolio-optimizer/.git/hooks/ && cp --update /opt/build/git/* /workspaces/cvxpy-portfolio-optimizer/.git/hooks/",
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "charliermarsh.ruff",
+                "ms-python.python",
+                "ryanluker.vscode-coverage-gutters",
+                "tamasfe.even-better-toml",
+                "visualstudioexptteam.vscodeintellicode"
+            ],
+            "settings": {
+                "coverage-gutters.coverageFileNames": [
+                    "reports/coverage.xml"
+                ],
+                "editor.codeActionsOnSave": {
+                    "source.fixAll": true,
+                    "source.organizeImports": true
+                },
+                "editor.formatOnSave": true,
+                "[toml]": {
+                    "editor.formatOnSave": false
+                },
+                "editor.rulers": [
+                    100
+                ],
+                "files.autoSave": "onFocusChange",
+                "python.defaultInterpreterPath": "/opt/cvxpy-portfolio-optimizer-env/bin/python",
+                "python.formatting.provider": "black",
+                "python.linting.mypyEnabled": true,
+                "python.terminal.activateEnvironment": false,
+                "python.testing.pytestEnabled": true,
+                "ruff.importStrategy": "fromEnvironment",
+                "terminal.integrated.defaultProfile.linux": "zsh",
+                "terminal.integrated.profiles.linux": {
+                    "zsh": {
+                        "path": "/usr/bin/zsh"
+                    }
+                }
+            }
+        }
+    }
+}
