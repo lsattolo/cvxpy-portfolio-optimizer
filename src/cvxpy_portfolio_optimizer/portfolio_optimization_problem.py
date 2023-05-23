@@ -1,13 +1,11 @@
 """Portfolio optimization problem module."""
+from typing import Any
+
 import cvxpy as cp
 import pandas as pd
 
-from cvxpy_portfolio_optimizer._enums import ObjectiveFunctionName, OptimizationVariableName
-from cvxpy_portfolio_optimizer.constraint_function import (
-    ConstraintFunction,
-    NoShortSellConstraint,
-    SumToOneConstraint,
-)
+from cvxpy_portfolio_optimizer._enums import ObjectiveFunctionName
+from cvxpy_portfolio_optimizer.constraint_function import ConstraintFunction
 from cvxpy_portfolio_optimizer.objective_function import ObjectiveFunction
 from cvxpy_portfolio_optimizer.portfolio import Portfolio
 
@@ -18,56 +16,64 @@ class PortfolioOptimizationProblem:
     def __init__(
         self,
         returns: pd.DataFrame,
-        objective_functions: list[ObjectiveFunction] | None = None,
-        constraint_functions: list[ConstraintFunction] | None = None,
+        objective_functions: list[ObjectiveFunction],
+        constraint_functions: list[ConstraintFunction],
     ) -> None:
         if returns.isna().sum().sum():
-            raise AssertionError("`returns` contains NaN.")
+            raise AssertionError("Passed `returns` contains NaN.")
         self.returns = returns
-        self.objective_functions = objective_functions or []
-        self.constraint_functions = constraint_functions or [
-            NoShortSellConstraint(),
-            SumToOneConstraint(),
-        ]
+        self.objective_functions = objective_functions
+        self.constraint_functions = constraint_functions
         self._universe = list(self.returns.columns)
 
-    def get_cvxpy_objectives_and_constraints(
-        self,
+    def _get_cvxpy_objectives_and_constraints(
+        self, weights_variable: cp.Variable
     ) -> tuple[list[dict[ObjectiveFunctionName | str, cp.Minimize]], list[cp.Constraint]]:
         """Get portfolio optimization problem."""
         assert (
             self.objective_functions
         ), "To get a portfolio optimization problem, at least one objective is needed."
-        weights_var = cp.Variable(
-            len(self._universe),
-            name=OptimizationVariableName.WEIGHTS,
-            nonneg=True,
-        )
         cvxpy_objectives: list[dict[ObjectiveFunctionName | str, cp.Minimize]] = []
         cvxpy_constraints: list[cp.Constraint] = []
         for obj_fun in self.objective_functions:
-            objective, constr_list = obj_fun.get_matrices(
-                returns=self.returns, weights_variable=weights_var
+            objective, constr_list = obj_fun.get_objective_and_auxiliary_constraints(
+                returns=self.returns, weights_variable=weights_variable
             )
             cvxpy_objectives.append(objective)
             cvxpy_constraints.extend(constr_list)
         for constr_fun in self.constraint_functions:
-            cvxpy_constraints.extend(constr_fun.get_constraints_list(weights_variable=weights_var))
+            cvxpy_constraints.extend(
+                constr_fun.get_constraints_list(weights_variable=weights_variable)
+            )
         return cvxpy_objectives, cvxpy_constraints
 
-    def solve(self, solver: str | None = None) -> pd.Series:
-        """Solve a portfolio optimization problem."""
-        cvxpy_objectives, cvxpy_constraints = self.get_cvxpy_objectives_and_constraints()
-        objs_list = [list(obj.values())[0] for obj in cvxpy_objectives]
-        problem = cp.Problem(cp.sum(objs_list), cvxpy_constraints)
-        problem.solve(solver=solver)
+    def solve(self, weights_tolerance: float | None = 1e-6, **kwargs: Any) -> Portfolio:
+        """Solve a portfolio optimization problem.
+
+        Parameters
+        ----------
+        weights_tolerance
+            An optional float, if provided the weights resulting smaller then weights_tolerance
+            after an optimization will be set to 0.
+        kwargs
+            All the supported params of cvxpy.problems.problem.Problem.solve().
+        """
+        weights_var = cp.Variable(len(self._universe))
+        cvxpy_objectives, cvxpy_constraints = self._get_cvxpy_objectives_and_constraints(
+            weights_var
+        )
+        problem = cp.Problem(
+            objective=cp.sum([min_obj for obj in cvxpy_objectives for min_obj in obj.values()]),
+            constraints=cvxpy_constraints,
+        )
+        problem.solve(**kwargs)
         if problem.status != "optimal":
-            raise AssertionError(f"Problem status not optimal but: {problem.status}")
-        weights_var = [
-            v for v in problem.variables() if v.name() == OptimizationVariableName.WEIGHTS
-        ][0]
+            raise AssertionError(f"Problem status is not optimal but: {problem.status}")
+        weights_series = pd.Series(dict(zip(self._universe, weights_var.value, strict=True)))
+        if weights_tolerance is not None:
+            weights_series[abs(weights_series) < weights_tolerance] = 0.0
         return Portfolio(
-            weights=pd.Series(dict(zip(self._universe, weights_var.value, strict=True))),
+            weights=weights_series,
             objective_values=[
                 {name: obj.value}
                 for cvxpy_obj in cvxpy_objectives
