@@ -37,13 +37,17 @@ class PortfolioOptimizationProblem:
         cvxpy_constraints: list[cp.Constraint] = []
         for obj_fun in self.objective_functions:
             objective, constr_list = obj_fun.get_objective_and_auxiliary_constraints(
-                returns=self.returns, weights_variable=weights_variable
+                returns=self.returns,
+                weights_variable=weights_variable,
             )
             cvxpy_objectives.append(objective)
             cvxpy_constraints.extend(constr_list)
         for constr_fun in self.constraint_functions:
             cvxpy_constraints.extend(
-                constr_fun.get_constraints_list(weights_variable=weights_variable)
+                constr_fun.get_constraints_list(
+                    returns=self.returns,
+                    weights_variable=weights_variable,
+                )
             )
         return cvxpy_objectives, cvxpy_constraints
 
@@ -57,6 +61,11 @@ class PortfolioOptimizationProblem:
             after an optimization will be set to 0.
         kwargs
             All the supported params of cvxpy.problems.problem.Problem.solve().
+
+        Returns
+        -------
+        Portfolio
+            The portfolio object containing the weights and the objective values.
         """
         weights_var = cp.Variable(len(self._universe))
         cvxpy_objectives, cvxpy_constraints = self._get_cvxpy_objectives_and_constraints(

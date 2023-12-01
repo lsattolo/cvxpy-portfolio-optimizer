@@ -34,6 +34,7 @@ ruff = ">=0.0.254"
 cruft = ">=2.12.0"
 jupyterlab = ">=3.6.1"
 pdoc = ">=13.0.0"
+yfinance = ">=0.2.32"
 
 [tool.black]  # https://black.readthedocs.io/en/stable/usage_and_configuration/the_basics.html#configuration-via-a-file
 line-length = 100
