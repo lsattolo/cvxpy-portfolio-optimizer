@@ -864,27 +864,30 @@ files = [
 
 [[package]]
 name = "ecos"
-version = "2.0.12"
+version = "2.0.13"
 description = "This is the Python package for ECOS: Embedded Cone Solver. See Github page for more information."
 optional = false
 python-versions = "*"
 files = [
-    {file = "ecos-2.0.12-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:835298a299c88c207b3402fba60ad9b5688b59bbbf2ac34a46de5b37165d773a"},
-    {file = "ecos-2.0.12-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:608bc822ee8e070927ab3519169b13a1a0fe88f3d562212d6b5dbb1039776360"},
-    {file = "ecos-2.0.12-cp310-cp310-win_amd64.whl", hash = "sha256:5184a9d8521ad1af90ffcd9902a6fa75c7bc473f37d30d86f97beda1033dfca2"},
-    {file = "ecos-2.0.12-cp311-cp311-macosx_10_9_x86_64.whl", hash = "sha256:eba07599084724eedc20b2862d5580eebebb09609f4740baadc78401cb99827c"},
-    {file = "ecos-2.0.12-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:4979dc2d1cb6667e371a45a61887068505c1305437eef104ed6ef16f4b6aa0e3"},
-    {file = "ecos-2.0.12-cp311-cp311-win_amd64.whl", hash = "sha256:da8fbbca3feb83a9e27075d29b3765417d0c80af8ea83cbdc4a558cae7b564af"},
-    {file = "ecos-2.0.12-cp37-cp37m-macosx_10_9_x86_64.whl", hash = "sha256:f70e4547966f530fd7715756f7a65d5b9b90b312b9d37f243ef9356c05e7d74c"},
-    {file = "ecos-2.0.12-cp37-cp37m-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:617be25d74222849622b0f82b94a11abcf1fae78ccaf69977b328321ee6ffa0b"},
-    {file = "ecos-2.0.12-cp37-cp37m-win_amd64.whl", hash = "sha256:29d00164eaea66ed54697a3b361c575284a8bca54f2623381a0635806c7303a7"},
-    {file = "ecos-2.0.12-cp38-cp38-macosx_10_9_x86_64.whl", hash = "sha256:4e86671397d1d2cd7cccff8a9c45be0541b0c60af8b92a0ff3581c9ed869db67"},
-    {file = "ecos-2.0.12-cp38-cp38-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:858a4dd3177bdc8cc6e362031732f5177b62138a1e4ef91c0dc3c6bd7d2d1248"},
-    {file = "ecos-2.0.12-cp38-cp38-win_amd64.whl", hash = "sha256:528b02f53835bd1baeb2e23f8153b8d6cc2b3704e1768be6a1a972f542241670"},
-    {file = "ecos-2.0.12-cp39-cp39-macosx_10_9_x86_64.whl", hash = "sha256:3e42bd4c19af6e04f76ccc85d941b1f1adc7faeee4d06d482395a6beb7bec895"},
-    {file = "ecos-2.0.12-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:6def54336a15b5a49bc3bfcaa36035e8557cae8a4853b17ca84f5a29c93bcaea"},
-    {file = "ecos-2.0.12-cp39-cp39-win_amd64.whl", hash = "sha256:7af08941552fce108bd80145cdb6be7fa74477a20bacdac170800442cc7027d4"},
-    {file = "ecos-2.0.12.tar.gz", hash = "sha256:f48816d73b87ae325556ea537b7c8743187311403c80e3832035224156337c4e"},
+    {file = "ecos-2.0.13-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:a1c1acf33b70f8657c25f07ec8d7b59bb01dbad39f072fa61fc956c2166ed979"},
+    {file = "ecos-2.0.13-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:4ea88ee2c94192004d6be9c55a3c79f184eaba3bbf31474229045a1b0a8a1536"},
+    {file = "ecos-2.0.13-cp310-cp310-win_amd64.whl", hash = "sha256:df8ae7fce79be9e5f79f0511c51a4824795de5154847fabe1a0288bc2ea349d3"},
+    {file = "ecos-2.0.13-cp311-cp311-macosx_10_9_x86_64.whl", hash = "sha256:88dd628bc6e77a069165fa5f50340e2856795c28e00e3fce213a04d7c41c584a"},
+    {file = "ecos-2.0.13-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:78b2c969c7e22fd8a1d1cd0a90f4325d90572da23e2e923b0da6138ce62503d0"},
+    {file = "ecos-2.0.13-cp311-cp311-win_amd64.whl", hash = "sha256:936890fb85a186360a5c8f228dd19acb760e234b38c598d0b46ab29644e31dfc"},
+    {file = "ecos-2.0.13-cp312-cp312-macosx_10_9_x86_64.whl", hash = "sha256:62ed497ab56017f1d7264eb56223826a984462b1d84fb850d10f0bec3490877d"},
+    {file = "ecos-2.0.13-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:cf2b1384012bee9e58e5a2373905d3644f74a0ea000b307a239366fe7850c29c"},
+    {file = "ecos-2.0.13-cp312-cp312-win_amd64.whl", hash = "sha256:2c1ea09069e32185912506f946bb6d1f144841ba1d1cd0217c67f72cbdf7a8fd"},
+    {file = "ecos-2.0.13-cp37-cp37m-macosx_10_9_x86_64.whl", hash = "sha256:b9f4a76a3e1165359e1704ec6b1b89d487858ec0d838d62a7268133d88221914"},
+    {file = "ecos-2.0.13-cp37-cp37m-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:d3c2d4e0d3ada1a619ddd62fbf48ccbe9b738fdbef119945fe2a05566d03b85a"},
+    {file = "ecos-2.0.13-cp37-cp37m-win_amd64.whl", hash = "sha256:84c72e1e5ffa41cd38352dcf0a8c25418f5bf04ed76a576db0daaf9a69f5568f"},
+    {file = "ecos-2.0.13-cp38-cp38-macosx_10_9_x86_64.whl", hash = "sha256:1979f1f17ec7f1a0fc45964d02d762393f9f427d965fe8a893e7b1476a9023c3"},
+    {file = "ecos-2.0.13-cp38-cp38-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:059e6c29c89f47a490353e4f9336e96350a5102a97e1d8a2aaff796bcbe50058"},
+    {file = "ecos-2.0.13-cp38-cp38-win_amd64.whl", hash = "sha256:30c7d0cce6c830da5b9ea25af0d47b203255639524eb4d03d1331c600958c834"},
+    {file = "ecos-2.0.13-cp39-cp39-macosx_10_9_x86_64.whl", hash = "sha256:ba42c15f1d79eb2ada532e9781b4aeb3ed84b1c7e38239ba4d6502c6a092d5b1"},
+    {file = "ecos-2.0.13-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:32fb33185f6dd94a1c798bc481eb86c9f4e832efec91f6ab0584e2fc26fd375e"},
+    {file = "ecos-2.0.13-cp39-cp39-win_amd64.whl", hash = "sha256:68995ab12d363576dddb2d1f91ead3b9c8a8ca61f29000f0b1daef1b4e7b5b64"},
+    {file = "ecos-2.0.13.tar.gz", hash = "sha256:f2a9dc108ade7faf6f6f4fad245f4714b7293c8767d2a351ead59428a94a98b9"},
 ]
 
 [package.dependencies]
