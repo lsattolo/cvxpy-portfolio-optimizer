@@ -1,4 +1,5 @@
 """Portfolio optimization problem module."""
+
 from typing import Any
 
 import cvxpy as cp
