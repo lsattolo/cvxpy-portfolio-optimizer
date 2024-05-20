@@ -67,7 +67,7 @@ class EfficientFrontier:
         # Compute minimum risk portfolio
         min_risk_ptf = self.pop.solve(weights_tolerance=weights_tolerance, **kwargs)
         min_risk_ptf_expected_return = expected_returns @ min_risk_ptf.weights
-        min_risk = min_risk_ptf.objective_values[0][self.objective_function.name]
+        min_risk = min_risk_ptf.get_objective_value(self.objective_function.name)
         ef_responses.append(
             EfficientFrontierResponse(
                 risk=min_risk,
@@ -92,7 +92,7 @@ class EfficientFrontier:
             ptf = pop.solve(weights_tolerance=weights_tolerance, **kwargs)
             ef_responses.append(
                 EfficientFrontierResponse(
-                    risk=ptf.objective_values[0][self.objective_function.name],
+                    risk=ptf.get_objective_value(self.objective_function.name),
                     expected_return=expected_returns @ ptf.weights,
                     optimal_portfolio_weights=ptf.weights,
                 )

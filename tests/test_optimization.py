@@ -31,16 +31,13 @@ def test_variance_optimization(returns_data: pd.DataFrame) -> None:
     assert (ptf.weights >= 0.0).all()
     annualized_sigma = 252 * returns_data.cov()
     ptf_variance = ptf.weights @ annualized_sigma @ ptf.weights
-    variance_obj_val = next(
-        obj_dict[ObjectiveFunctionName.VARIANCE]
-        for obj_dict in ptf.objective_values
-        if ObjectiveFunctionName.VARIANCE in obj_dict
-    )
+    variance_obj_val = ptf.get_objective_value(ObjectiveFunctionName.VARIANCE)
     assert abs(ptf_variance - variance_obj_val) < 1e-6
+    assert isinstance(ptf.portfolio_timeseries(), pd.Series)
 
 
 def test_tracking_error_constraint(returns_data: pd.DataFrame) -> None:
-    """Test minimum variance optimization."""
+    """Test CVaR optimization with Tracking Error constraint."""
     benchmark = returns_data["AAPL"]
     tracking_error_ub = 0.0
     pop = PortfolioOptimizationProblem(

@@ -6,6 +6,7 @@ import cvxpy as cp
 import pandas as pd
 
 from cvxpy_portfolio_optimizer._enums import ObjectiveFunctionName
+from cvxpy_portfolio_optimizer._models import ObjectiveModel
 
 
 class ObjectiveFunction(metaclass=ABCMeta):
@@ -24,7 +25,7 @@ class ObjectiveFunction(metaclass=ABCMeta):
         self,
         returns: pd.DataFrame,
         weights_variable: cp.Variable,
-    ) -> tuple[dict[ObjectiveFunctionName | str, cp.Minimize], list[cp.Constraint]]:
+    ) -> tuple[ObjectiveModel, list[cp.Constraint]]:
         """Get optimization matrices."""
 
 
@@ -44,7 +45,7 @@ class CVaRObjectiveFunction(ObjectiveFunction):
         self,
         returns: pd.DataFrame,
         weights_variable: cp.Variable,
-    ) -> tuple[dict[ObjectiveFunctionName | str, cp.Minimize], list[cp.Constraint]]:
+    ) -> tuple[ObjectiveModel, list[cp.Constraint]]:
         """Get CVaR optimization matrices."""
         rets_vals = returns.values
         n_obs = rets_vals.shape[0]
@@ -53,9 +54,9 @@ class CVaRObjectiveFunction(ObjectiveFunction):
         objective_function = value_at_risk + 1 / ((1 - self.confidence_level) * n_obs) * cp.sum(
             losses_minus_var
         )
-        return {self.name: cp.Minimize(self.weight * objective_function)}, [
-            -rets_vals @ weights_variable - value_at_risk - losses_minus_var <= 0
-        ]
+        return ObjectiveModel(
+            name=self.name, function=cp.Minimize(self.weight * objective_function)
+        ), [-rets_vals @ weights_variable - value_at_risk - losses_minus_var <= 0]
 
 
 class VarianceObjectiveFunction(ObjectiveFunction):
@@ -72,12 +73,15 @@ class VarianceObjectiveFunction(ObjectiveFunction):
         self,
         returns: pd.DataFrame,
         weights_variable: cp.Variable,
-    ) -> tuple[dict[ObjectiveFunctionName | str, cp.Minimize], list[cp.Constraint]]:
+    ) -> tuple[ObjectiveModel, list[cp.Constraint]]:
         """Get Variance optimization matrices."""
         # Annualize the cov mat
         sigma = 252 * returns.cov().values
         objective_function = weights_variable @ sigma @ weights_variable
-        return {self.name: cp.Minimize(self.weight * objective_function)}, []
+        return (
+            ObjectiveModel(name=self.name, function=cp.Minimize(self.weight * objective_function)),
+            [],
+        )
 
 
 class ExpectedReturnsObjectiveFunction(ObjectiveFunction):
@@ -94,12 +98,15 @@ class ExpectedReturnsObjectiveFunction(ObjectiveFunction):
         self,
         returns: pd.DataFrame,
         weights_variable: cp.Variable,
-    ) -> tuple[dict[ObjectiveFunctionName | str, cp.Minimize], list[cp.Constraint]]:
+    ) -> tuple[ObjectiveModel, list[cp.Constraint]]:
         """Get Expected Returns optimization matrices."""
         # Annualize expected returns and put minus in front to maximize
         exp_rets = -252 * returns.mean().values
         objective_function = weights_variable @ exp_rets
-        return {self.name: cp.Minimize(self.weight * objective_function)}, []
+        return (
+            ObjectiveModel(name=self.name, function=cp.Minimize(self.weight * objective_function)),
+            [],
+        )
 
 
 class MADObjectiveFunction(ObjectiveFunction):
@@ -116,14 +123,16 @@ class MADObjectiveFunction(ObjectiveFunction):
         self,
         returns: pd.DataFrame,
         weights_variable: cp.Variable,
-    ) -> tuple[dict[ObjectiveFunctionName | str, cp.Minimize], list[cp.Constraint]]:
+    ) -> tuple[ObjectiveModel, list[cp.Constraint]]:
         """Get Mean Absolute Deviation optimization matrices."""
         rets_vals = returns.values
         n_obs = rets_vals.shape[0]
         abs_devs = cp.Variable(n_obs, nonneg=True)
         rets_minus_mu = rets_vals - returns.mean().values
         objective_function = cp.sum(abs_devs) / n_obs
-        return {self.name: cp.Minimize(self.weight * objective_function)}, [
+        return ObjectiveModel(
+            name=self.name, function=cp.Minimize(self.weight * objective_function)
+        ), [
             rets_minus_mu @ weights_variable - abs_devs <= 0.0,
             -rets_minus_mu @ weights_variable - abs_devs <= 0.0,
         ]
@@ -145,7 +154,7 @@ class TrackingErrorObjectiveFunction(ObjectiveFunction):
         self,
         returns: pd.DataFrame,
         weights_variable: cp.Variable,
-    ) -> tuple[dict[ObjectiveFunctionName | str, cp.Minimize], list[cp.Constraint]]:
+    ) -> tuple[ObjectiveModel, list[cp.Constraint]]:
         """Get TrackingError optimization matrices."""
         ret_vals = returns.values
         assert ret_vals.shape[0] == len(
@@ -159,7 +168,7 @@ class TrackingErrorObjectiveFunction(ObjectiveFunction):
                 cp.Minimize(weights_variable @ linvector),
             ]
         )
-        return {self.name: objective_function * self.weight}, []
+        return ObjectiveModel(name=self.name, function=objective_function * self.weight), []
 
 
 class WorstRealizationObjectiveFunction(ObjectiveFunction):
@@ -176,11 +185,11 @@ class WorstRealizationObjectiveFunction(ObjectiveFunction):
         self,
         returns: pd.DataFrame,
         weights_variable: cp.Variable,
-    ) -> tuple[dict[ObjectiveFunctionName | str, cp.Minimize], list[cp.Constraint]]:
+    ) -> tuple[ObjectiveModel, list[cp.Constraint]]:
         """Get WorstRealization optimization matrices."""
         ret_vals = returns.values
         max_variable = cp.Variable(1)
         objective_function = cp.Minimize(-max_variable)
-        return {self.name: objective_function * self.weight}, [
+        return ObjectiveModel(name=self.name, function=objective_function * self.weight), [
             max_variable - ret_vals @ weights_variable <= 0.0
         ]

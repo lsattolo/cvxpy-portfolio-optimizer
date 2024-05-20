@@ -5,7 +5,7 @@ from typing import Any
 import cvxpy as cp
 import pandas as pd
 
-from cvxpy_portfolio_optimizer._enums import ObjectiveFunctionName
+from cvxpy_portfolio_optimizer._models import ObjectiveModel
 from cvxpy_portfolio_optimizer.constraint_function import ConstraintFunction
 from cvxpy_portfolio_optimizer.objective_function import ObjectiveFunction
 from cvxpy_portfolio_optimizer.portfolio import Portfolio
@@ -29,12 +29,12 @@ class PortfolioOptimizationProblem:
 
     def _get_cvxpy_objectives_and_constraints(
         self, weights_variable: cp.Variable
-    ) -> tuple[list[dict[ObjectiveFunctionName | str, cp.Minimize]], list[cp.Constraint]]:
+    ) -> tuple[list[ObjectiveModel], list[cp.Constraint]]:
         """Get portfolio optimization problem."""
         assert (
             self.objective_functions
         ), "To get a portfolio optimization problem, at least one objective is needed."
-        cvxpy_objectives: list[dict[ObjectiveFunctionName | str, cp.Minimize]] = []
+        cvxpy_objectives: list[ObjectiveModel] = []
         cvxpy_constraints: list[cp.Constraint] = []
         for obj_fun in self.objective_functions:
             objective, constr_list = obj_fun.get_objective_and_auxiliary_constraints(
@@ -73,7 +73,7 @@ class PortfolioOptimizationProblem:
             weights_var
         )
         problem = cp.Problem(
-            objective=cp.sum([min_obj for obj in cvxpy_objectives for min_obj in obj.values()]),
+            objective=cp.sum([obj_model.function for obj_model in cvxpy_objectives]),
             constraints=cvxpy_constraints,
         )
         problem.solve(**kwargs)
@@ -84,9 +84,6 @@ class PortfolioOptimizationProblem:
             weights_series[abs(weights_series) < weights_tolerance] = 0.0
         return Portfolio(
             weights=weights_series,
-            objective_values=[
-                {name: obj.value}
-                for cvxpy_obj in cvxpy_objectives
-                for name, obj in cvxpy_obj.items()
-            ],
+            objectives=cvxpy_objectives,
+            returns_data=self.returns,
         )
