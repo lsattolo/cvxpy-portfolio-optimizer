@@ -11,7 +11,10 @@ class ConstraintFunction(metaclass=ABCMeta):
 
     @abstractmethod
     def get_constraints_list(
-        self, returns: pd.DataFrame, weights_variable: cp.Variable
+        self,
+        returns: pd.DataFrame,
+        weights_variable: cp.Variable,
+        universe: list[str],
     ) -> list[cp.Constraint]:
         """Get optimization matrices."""
 
@@ -20,7 +23,10 @@ class NoShortSellConstraint(ConstraintFunction):
     """NoShortSell constraint."""
 
     def get_constraints_list(
-        self, returns: pd.DataFrame, weights_variable: cp.Variable
+        self,
+        returns: pd.DataFrame,
+        weights_variable: cp.Variable,
+        universe: list[str],
     ) -> list[cp.Constraint]:
         """Get no short sell constraint matrices."""
         return [weights_variable >= 0.0]
@@ -30,7 +36,10 @@ class SumToOneConstraint(ConstraintFunction):
     """SumToOne constraint."""
 
     def get_constraints_list(
-        self, returns: pd.DataFrame, weights_variable: cp.Variable
+        self,
+        returns: pd.DataFrame,
+        weights_variable: cp.Variable,
+        universe: list[str],
     ) -> list[cp.Constraint]:
         """Get sum to one constraint matrices."""
         return [cp.sum(weights_variable) == 1.0]
@@ -48,7 +57,10 @@ class NumberOfAssetsConstraint(ConstraintFunction):
         self.upper_bound = upper_bound
 
     def get_constraints_list(
-        self, returns: pd.DataFrame, weights_variable: cp.Variable
+        self,
+        returns: pd.DataFrame,
+        weights_variable: cp.Variable,
+        universe: list[str],
     ) -> list[cp.Constraint]:
         """Get number of assets constraint matrices."""
         w_bool = cp.Variable(weights_variable.shape, boolean=True)
@@ -72,7 +84,10 @@ class ExpectedReturnConstraint(ConstraintFunction):
         self.upper_bound = upper_bound
 
     def get_constraints_list(
-        self, returns: pd.DataFrame, weights_variable: cp.Variable
+        self,
+        returns: pd.DataFrame,
+        weights_variable: cp.Variable,
+        universe: list[str],
     ) -> list[cp.Constraint]:
         """Get expected returns constraint matrices."""
         expected_returns = returns.mean().values
@@ -98,7 +113,10 @@ class TrackingErrorConstraint(ConstraintFunction):
         self.benchmark_returns = benchmark_returns
 
     def get_constraints_list(
-        self, returns: pd.DataFrame, weights_variable: cp.Variable
+        self,
+        returns: pd.DataFrame,
+        weights_variable: cp.Variable,
+        universe: list[str],
     ) -> list[cp.Constraint]:
         """Get tracking error matrices."""
         ret_vals = returns.values
@@ -113,4 +131,36 @@ class TrackingErrorConstraint(ConstraintFunction):
             constraints.append(tracking_error >= self.lower_bound)
         if self.upper_bound is not None:
             constraints.append(tracking_error <= self.upper_bound)
+        return constraints
+
+
+class WeightsToBoundConstraint(ConstraintFunction):
+    """WeightsToBoundConstraint constraint."""
+
+    def __init__(
+        self,
+        lower_bound: float | dict[str, float] | None = None,
+        upper_bound: float | dict[str, float] | None = None,
+    ) -> None:
+        self.lower_bound = lower_bound
+        self.upper_bound = upper_bound
+
+    def get_constraints_list(
+        self,
+        returns: pd.DataFrame,
+        weights_variable: cp.Variable,
+        universe: list[str],
+    ) -> list[cp.Constraint]:
+        """Get weights to bound constraint matrices."""
+        constraints = []
+        bounds = [(self.lower_bound, cp.Variable.__ge__), (self.upper_bound, cp.Variable.__le__)]
+
+        for bound, constr_operator in bounds:
+            if isinstance(bound, float):
+                constraints.append(constr_operator(weights_variable, bound))
+            elif isinstance(bound, dict):
+                for idx, instr in enumerate(universe):
+                    if instr in bound:
+                        constraints.append(constr_operator(weights_variable[idx], bound[instr]))
+
         return constraints

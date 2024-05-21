@@ -8,10 +8,12 @@ from cvxpy_portfolio_optimizer.constraint_function import (
     NoShortSellConstraint,
     SumToOneConstraint,
     TrackingErrorConstraint,
+    WeightsToBoundConstraint,
 )
 from cvxpy_portfolio_optimizer.objective_function import (
     CVaRObjectiveFunction,
     VarianceObjectiveFunction,
+    WorstRealizationObjectiveFunction,
 )
 from cvxpy_portfolio_optimizer.portfolio_optimization_problem import PortfolioOptimizationProblem
 
@@ -55,3 +57,22 @@ def test_tracking_error_constraint(returns_data: pd.DataFrame) -> None:
     tracking_error = (returns_data @ ptf.weights - benchmark).std()
     assert abs(tracking_error - tracking_error_ub) < 1e-6
     assert all(w == "AAPL" for w in ptf.weights[ptf.weights > 0].index)
+
+
+def test_optimization_with_weights_constraint(returns_data: pd.DataFrame) -> None:
+    """Test CVaR optimization with Tracking Error constraint."""
+    pop = PortfolioOptimizationProblem(
+        returns=returns_data,
+        objective_functions=[
+            WorstRealizationObjectiveFunction(),
+        ],
+        constraint_functions=[
+            SumToOneConstraint(),
+            NoShortSellConstraint(),
+            WeightsToBoundConstraint(lower_bound={"AAPL": 0.1}, upper_bound={"AAPL": 0.1}),
+            WeightsToBoundConstraint(upper_bound=0.2),
+        ],
+    )
+    ptf = pop.solve(solver=cp.CLARABEL)
+    assert abs(ptf.weights["AAPL"] - 0.1) < 1e-6
+    assert (ptf.weights <= 0.2).all()
