@@ -2,16 +2,19 @@
     "name": "cvxpy-portfolio-optimizer",
     "dockerComposeFile": "../docker-compose.yml",
     "service": "devcontainer",
-    "workspaceFolder": "/workspaces/cvxpy-portfolio-optimizer/",
+    "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}/",
     "remoteUser": "user",
     "overrideCommand": true,
-    "initializeCommand": ".devcontainer/init",
-    "postStartCommand": "cp --update /opt/build/poetry/poetry.lock /workspaces/cvxpy-portfolio-optimizer/ && mkdir -p /workspaces/cvxpy-portfolio-optimizer/.git/hooks/ && cp --update /opt/build/git/* /workspaces/cvxpy-portfolio-optimizer/.git/hooks/",
+    "postStartCommand": "cp --update /opt/build/poetry/poetry.lock /workspaces/${localWorkspaceFolderBasename}/ && mkdir -p /workspaces/${localWorkspaceFolderBasename}/.git/hooks/ && cp --update /opt/build/git/* /workspaces/${localWorkspaceFolderBasename}/.git/hooks/",
     "customizations": {
         "vscode": {
             "extensions": [
                 "charliermarsh.ruff",
+                "GitHub.vscode-github-actions",
+                "GitHub.vscode-pull-request-github",
+                "ms-python.mypy-type-checker",
                 "ms-python.python",
+                "ms-toolsai.jupyter",
                 "ryanluker.vscode-coverage-gutters",
                 "tamasfe.even-better-toml",
                 "visualstudioexptteam.vscodeintellicode"
@@ -21,10 +24,13 @@
                     "reports/coverage.xml"
                 ],
                 "editor.codeActionsOnSave": {
-                    "source.fixAll": true,
-                    "source.organizeImports": true
+                    "source.fixAll": "explicit",
+                    "source.organizeImports": "explicit"
                 },
                 "editor.formatOnSave": true,
+                "[python]": {
+                    "editor.defaultFormatter": "charliermarsh.ruff"
+                },
                 "[toml]": {
                     "editor.formatOnSave": false
                 },
@@ -32,9 +38,16 @@
                     100
                 ],
                 "files.autoSave": "onFocusChange",
+                "jupyter.kernels.excludePythonEnvironments": [
+                    "/usr/local/bin/python"
+                ],
+                "mypy-type-checker.importStrategy": "fromEnvironment",
+                "notebook.codeActionsOnSave": {
+                    "notebook.source.fixAll": "explicit",
+                    "notebook.source.organizeImports": "explicit"
+                },
+                "notebook.formatOnSave.enabled": true,
                 "python.defaultInterpreterPath": "/opt/cvxpy-portfolio-optimizer-env/bin/python",
-                "python.formatting.provider": "black",
-                "python.linting.mypyEnabled": true,
                 "python.terminal.activateEnvironment": false,
                 "python.testing.pytestEnabled": true,
                 "ruff.importStrategy": "fromEnvironment",

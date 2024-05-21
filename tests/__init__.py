@@ -1,1 +1,1 @@
-"""cvxpy-portfolio-optimizer test suite."""
+"""My Package test suite."""

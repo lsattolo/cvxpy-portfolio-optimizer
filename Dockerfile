@@ -2,17 +2,8 @@
 ARG PYTHON_VERSION=3.10.5
 FROM python:$PYTHON_VERSION-slim AS base
 
-# Install Poetry.
-ENV POETRY_VERSION 1.3.1
-RUN --mount=type=cache,target=/root/.cache/pip/ \
-    pip install poetry~=$POETRY_VERSION
-
-# Install compilers that may be required for certain packages or platforms.
+# Remove docker-clean so we can keep the apt cache in Docker build cache.
 RUN rm /etc/apt/apt.conf.d/docker-clean
-RUN --mount=type=cache,target=/var/cache/apt/ \
-    --mount=type=cache,target=/var/lib/apt/ \
-    apt-get update && \
-    apt-get install --no-install-recommends --yes build-essential
 
 # Create a non-root user and switch to it [1].
 # [1] https://code.visualstudio.com/remote/advancedcontainers/add-nonroot-user
@@ -24,47 +15,52 @@ RUN groupadd --gid $GID user && \
 USER user
 
 # Create and activate a virtual environment.
-RUN python -m venv /opt/cvxpy-portfolio-optimizer-env
-ENV PATH /opt/cvxpy-portfolio-optimizer-env/bin:$PATH
 ENV VIRTUAL_ENV /opt/cvxpy-portfolio-optimizer-env
+ENV PATH $VIRTUAL_ENV/bin:$PATH
+RUN python -m venv $VIRTUAL_ENV
 
 # Set the working directory.
 WORKDIR /workspaces/cvxpy-portfolio-optimizer/
+
+
+
+FROM base as poetry
+
+USER root
+
+# Install Poetry in separate venv so it doesn't pollute the main venv.
+ENV POETRY_VERSION 1.8.0
+ENV POETRY_VIRTUAL_ENV /opt/poetry-env
+RUN --mount=type=cache,target=/root/.cache/pip/ \
+    python -m venv $POETRY_VIRTUAL_ENV && \
+    $POETRY_VIRTUAL_ENV/bin/pip install poetry~=$POETRY_VERSION && \
+    ln -s $POETRY_VIRTUAL_ENV/bin/poetry /usr/local/bin/poetry
+
+# Install compilers that may be required for certain packages or platforms.
+RUN --mount=type=cache,target=/var/cache/apt/ \
+    --mount=type=cache,target=/var/lib/apt/ \
+    apt-get update && \
+    apt-get install --no-install-recommends --yes build-essential
+
+USER user
 
 # Install the run time Python dependencies in the virtual environment.
 COPY --chown=user:user poetry.lock* pyproject.toml /workspaces/cvxpy-portfolio-optimizer/
 RUN mkdir -p /home/user/.cache/pypoetry/ && mkdir -p /home/user/.config/pypoetry/ && \
     mkdir -p src/cvxpy_portfolio_optimizer/ && touch src/cvxpy_portfolio_optimizer/__init__.py && touch README.md
 RUN --mount=type=cache,uid=$UID,gid=$GID,target=/home/user/.cache/pypoetry/ \
-    poetry install --only main --no-interaction
+    poetry install --only main --all-extras --no-interaction
 
 
 
-FROM base as ci
+FROM poetry as dev
 
-# Allow CI to run as root.
-USER root
-
-# Install git so we can run pre-commit.
-RUN --mount=type=cache,target=/var/cache/apt/ \
-    --mount=type=cache,target=/var/lib/apt/ \
-    apt-get update && \
-    apt-get install --no-install-recommends --yes git
-
-# Install the CI/CD Python dependencies in the virtual environment.
-RUN --mount=type=cache,target=/root/.cache/pypoetry/ \
-    poetry install --only main,test --no-interaction
-
-
-
-FROM base as dev
-
-# Install development tools: compilers, curl, git, gpg, ssh, starship, sudo, vim, and zsh.
+# Install development tools: curl, git, gpg, ssh, starship, sudo, vim, and zsh.
 USER root
 RUN --mount=type=cache,target=/var/cache/apt/ \
     --mount=type=cache,target=/var/lib/apt/ \
     apt-get update && \
-    apt-get install --no-install-recommends --yes build-essential curl git gnupg ssh sudo vim zsh && \
+    apt-get install --no-install-recommends --yes curl git gnupg ssh sudo vim zsh && \
     sh -c "$(curl -fsSL https://starship.rs/install.sh)" -- "--yes" && \
     usermod --shell /usr/bin/zsh user && \
     echo 'user ALL=(root) NOPASSWD:ALL' > /etc/sudoers.d/user && chmod 0440 /etc/sudoers.d/user
@@ -72,7 +68,7 @@ USER user
 
 # Install the development Python dependencies in the virtual environment.
 RUN --mount=type=cache,uid=$UID,gid=$GID,target=/home/user/.cache/pypoetry/ \
-    poetry install --no-interaction
+    poetry install --all-extras --no-interaction
 
 # Persist output generated during docker build so that we can restore it in the dev container.
 COPY --chown=user:user .pre-commit-config.yaml /workspaces/cvxpy-portfolio-optimizer/
@@ -81,7 +77,7 @@ RUN mkdir -p /opt/build/poetry/ && cp poetry.lock /opt/build/poetry/ && \
     mkdir -p /opt/build/git/ && cp .git/hooks/commit-msg .git/hooks/pre-commit /opt/build/git/
 
 # Configure the non-root user's shell.
-ENV ANTIDOTE_VERSION 1.8.1
+ENV ANTIDOTE_VERSION 1.8.6
 RUN git clone --branch v$ANTIDOTE_VERSION --depth=1 https://github.com/mattmc3/antidote.git ~/.antidote/ && \
     echo 'zsh-users/zsh-syntax-highlighting' >> ~/.zsh_plugins.txt && \
     echo 'zsh-users/zsh-autosuggestions' >> ~/.zsh_plugins.txt && \

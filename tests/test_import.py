@@ -1,4 +1,4 @@
-"""Test cvxpy-portfolio-optimizer."""
+"""Test My Package."""
 
 import cvxpy_portfolio_optimizer
 

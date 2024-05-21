@@ -102,8 +102,8 @@ class TrackingErrorConstraint(ConstraintFunction):
     ) -> list[cp.Constraint]:
         """Get tracking error matrices."""
         ret_vals = returns.values
-        assert ret_vals.shape[0] == len(
-            self.benchmark_returns
+        assert (
+            ret_vals.shape[0] == len(self.benchmark_returns)
         ), "Number of observation of the universe returns are not the same as the benchmark returns to track."
         tracking_error = cp.norm(
             ret_vals @ weights_variable - self.benchmark_returns, "fro"

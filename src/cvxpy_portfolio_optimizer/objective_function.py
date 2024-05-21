@@ -157,8 +157,8 @@ class TrackingErrorObjectiveFunction(ObjectiveFunction):
     ) -> tuple[ObjectiveModel, list[cp.Constraint]]:
         """Get TrackingError optimization matrices."""
         ret_vals = returns.values
-        assert ret_vals.shape[0] == len(
-            self.benchmark_returns
+        assert (
+            ret_vals.shape[0] == len(self.benchmark_returns)
         ), "Number of observation of the universe returns are not the same as the benchmark returns to track."
         qmat = (ret_vals).T.dot(ret_vals)
         linvector = -2 * self.benchmark_returns.values.dot(ret_vals)
