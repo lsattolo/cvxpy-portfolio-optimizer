@@ -19,16 +19,23 @@ class Portfolio:
         self.objectives = objectives
         self.returns_data = returns_data
 
+    def portfolio_returns(
+        self,
+        start_date: pd.Timestamp | None = None,
+        end_date: pd.Timestamp | None = None,
+    ) -> pd.Series:
+        """Get portfolio returns."""
+        start_date = start_date or self.returns_data.index[0]
+        end_date = end_date or self.returns_data.index[-1]
+        return self.returns_data.loc[start_date:end_date] @ self.weights
+
     def portfolio_timeseries(
         self,
         start_date: pd.Timestamp | None = None,
         end_date: pd.Timestamp | None = None,
     ) -> pd.Series:
         """Get portfolio timeseries."""
-        start_date = start_date or self.returns_data.index[0]
-        end_date = end_date or self.returns_data.index[-1]
-        ptf_rets = self.returns_data.loc[start_date:end_date] @ self.weights
-        return (1 + ptf_rets).cumprod()
+        return (1 + self.portfolio_returns(start_date, end_date)).cumprod()
 
     def get_total_objective_value(self) -> float:
         """Get total objective value."""
